@@ -1,24 +1,21 @@
 using UnityEngine;
-using UnityEngine.InputSystem;
-using System.Collections;
 using System.Collections.Generic;
 using System;
 
+/// <summary>
+/// Manages a buffer of input commands to ensure smooth and responsive input handling.
+/// </summary>
 public class InputBuffer : MonoBehaviour
 {
-    private Queue<InputCommand> inputBuffer;
-    private float bufferTime = 0.2f; // Time in seconds to keep inputs in the buffer
-    private float inputDelay = 0.05f; // Minor delay before registering input
-
-    void Start()
-    {
-        inputBuffer = new Queue<InputCommand>();
-    }
-
-
-
     
-    public void ProcessInputBuffer(Action<InputCommand> EexecuteCommand)
+    private readonly float bufferTime = 0.2f; // Time in seconds to keep inputs in the buffer
+    private InputType inputType;
+
+    /// <summary>
+    /// Processes the input buffer, executing the oldest command if it is still within the buffer time.
+    /// </summary>
+    /// <param name="EexecuteCommand">The action to execute with the dequeued input command.</param>
+    public void ProcessInputBuffer( Queue<InputCommand> inputBuffer, Action<InputCommand> EexecuteCommand)
     {
         while (inputBuffer.Count > 0 && Time.time - inputBuffer.Peek().timestamp > bufferTime)
         {
@@ -32,15 +29,22 @@ public class InputBuffer : MonoBehaviour
         }
     }
 
-   
+    /// <summary>
+    /// Represents an input command with a name and timestamp.
+    /// </summary>
     public class InputCommand
     {
         public string name;
         public float timestamp;
-
-        public InputCommand(string name, float timestamp)
+        public InputType inputType;
+        /// <summary>
+        /// Initializes a new instance of the <see cref="InputCommand"/> class.
+        /// </summary>
+        /// <param name="name">The name of the input command.</param>
+        /// <param name="timestamp">The time at which the command was issued.</param>
+        public InputCommand(InputType inputType, float timestamp)
         {
-            this.name = name;
+            this.inputType = inputType;
             this.timestamp = timestamp;
         }
     }
