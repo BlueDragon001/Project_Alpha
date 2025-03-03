@@ -4,8 +4,7 @@ public enum InputType
     Jump,
     Dodge,
     Block,
-    Run,
-    Walk,
+    Move,
     Crouch,
     Interact
 }

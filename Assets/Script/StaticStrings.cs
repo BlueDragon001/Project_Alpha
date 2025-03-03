@@ -1,5 +1,3 @@
-using UnityEngine;
-
 public static class StaticStrings
 {
    public const string aniDeath = "Death";
