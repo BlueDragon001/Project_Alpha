@@ -4,29 +4,36 @@ using System.Collections.Generic;
 using UnityEngine.InputSystem;
 
 
-[RequireComponent(typeof(CombatAnimation))]
+
 [RequireComponent(typeof(PlayerInput))]
 public class InputHandler : MonoBehaviour
 {
-    private InputBuffer inputBuffer;
-    private Queue<InputBuffer.InputCommand> inputBufferQueue;
+    private InputBuffer inputBuffer = new();
+    private Queue<InputBuffer.InputCommand> inputBufferQueue = new();
     private readonly float inputDelay = 0.05f;
 
-    private RingBuffer<InputType> previousActionsBuffer = new(2);
-    private CombatAnimation combatAnimation;
+    private RingBuffer<InputType> previousActionsBuffer = new(1);
 
     private bool isRunning = false;
-    private bool isBlocking = false;
     void Start()
     {
-        // inputBuffer = GetComponent<InputBuffer>();
-        // inputBufferQueue = new Queue<InputBuffer.InputCommand>();
-        combatAnimation = GetComponent<CombatAnimation>();
+
     }
 
     void Update()
     {
         inputBuffer.ProcessInputBuffer(inputBufferQueue, ExecuteCommand);
+
+        if (inputBufferQueue.Count > 0)
+        {
+            var command = inputBufferQueue.Dequeue();
+            if (command != null)
+            {
+                Debug.Log(command.inputType.ToString());
+            }
+        }
+
+
     }
 
     // Update is called once per frame
@@ -50,13 +57,13 @@ public class InputHandler : MonoBehaviour
     {
         // Implement movement input handling here
         Vector2 moveInput = context.ReadValue<Vector2>();
-        StartCoroutine(RegisterInputWithDelay(InputType.Move, moveInput));
+        StartCoroutine(RegisterInputWithDelay(InputType.MoveBackward, moveInput));
     }
 
     public void OnBlock(InputAction.CallbackContext context)
     {
         // Implement block input handling here
-        if(context.started) StartCoroutine(RegisterInputWithDelay(InputType.Block));
+        if (context.started) StartCoroutine(RegisterInputWithDelay(InputType.Block));
     }
 
     public void ActionModifier(InputAction.CallbackContext context)
@@ -65,10 +72,11 @@ public class InputHandler : MonoBehaviour
         if (context.started)
         {
             isRunning = true;
-        }else if (context.canceled)
+        }
+        else if (context.canceled)
         {
             isRunning = false;
-            
+
         }
     }
 
@@ -82,7 +90,11 @@ public class InputHandler : MonoBehaviour
 
     private void ExecuteCommand(InputBuffer.InputCommand command)
     {
-        var attack = previousActionsBuffer.Dequeue();
+        var attack = InputType.Null;
+        if (previousActionsBuffer.Count > 0)
+        {
+            attack = previousActionsBuffer.Dequeue();
+        }
         switch (command.inputType)
         {
             case InputType.Attack:
@@ -99,7 +111,7 @@ public class InputHandler : MonoBehaviour
             case InputType.Jump:
                 Jump();
                 break;
-            case InputType.Move:
+            case InputType.MoveForward:
                 Move();
                 break;
             case InputType.Block:
@@ -112,30 +124,25 @@ public class InputHandler : MonoBehaviour
 
     void Attack(bool isConsecutiveAttack)
     {
-        if (isConsecutiveAttack) combatAnimation.PlayConsecutiveAttackAniamtion();
-        else combatAnimation.PlayAttackAnimation();
+        Debug.Log("Attack");
     }
 
     void Jump()
     {
-        combatAnimation.PlayJumpAttackAniamtion();
     }
 
     void Move()
     {
-        if(isRunning)
+        if (isRunning)
         {
-            combatAnimation.PlayRunAnimation(true);
         }
         else
         {
-            combatAnimation.PlayWalkAnimation(true);
         }
     }
 
     void Block()
     {
-        combatAnimation.PlayBlockAnimation();
     }
 
 

@@ -87,7 +87,7 @@
                     "initialStateCheck": false
                 },
                 {
-                    "name": "RightAction",
+                    "name": "Block",
                     "type": "Button",
                     "id": "d4991e71-d6e5-4703-99f3-dab36a8a3812",
                     "expectedControlType": "",
@@ -489,7 +489,7 @@
                     "interactions": "",
                     "processors": "",
                     "groups": ";Keyboard&Mouse",
-                    "action": "RightAction",
+                    "action": "Block",
                     "isComposite": false,
                     "isPartOfComposite": false
                 }

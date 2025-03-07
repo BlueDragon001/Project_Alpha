@@ -1,10 +1,15 @@
-public enum InputType 
+public enum  InputType 
 {
+    Idle,
     Attack,
     Jump,
     Dodge,
     Block,
-    Move,
+    MoveForward,
+    MoveBackward,
+    MoveLeft,
+    MoveRight,
     Crouch,
-    Interact
+    Interact,
+    Null
 }

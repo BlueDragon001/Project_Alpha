@@ -1,0 +1,24 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 32176744f2ba1134aaef5568956bb177, type: 3}
+  m_Name: AnimationHandler
+  m_EditorClassIdentifier: 
+  Idle: {fileID: -203655887218126122, guid: f5779240fed5406459a3fb467f42b737, type: 3}
+  attack1: {fileID: -203655887218126122, guid: 13ab7c0a03d9b8749a66c6eb764e04ba, type: 3}
+  attack2: {fileID: -203655887218126122, guid: 9bee08ca409fc3a4cbc3f05be9ccbc4b, type: 3}
+  sweepAttack: {fileID: -203655887218126122, guid: 41f4cbdb8348cde498a225e6b3e54286, type: 3}
+  block: {fileID: -203655887218126122, guid: befde5ffdff7039489c78e7c6530016c, type: 3}
+  jump: {fileID: -203655887218126122, guid: 60bcd30a1db97b54b8b1993779f1ef71, type: 3}
+  MoveForward: {fileID: -203655887218126122, guid: 6b3455997606d2c44a6da549f72e266f, type: 3}
+  MoveBackward: {fileID: -203655887218126122, guid: aeeb6838a3b94c74f92e5df8073b6237, type: 3}
+  MoveLeft: {fileID: -203655887218126122, guid: d16bbba77dd6f504bb765c0f757f9c2b, type: 3}
+  MoveRight: {fileID: -203655887218126122, guid: 57142ea8ae9866b4e8a68d1a667ff743, type: 3}
