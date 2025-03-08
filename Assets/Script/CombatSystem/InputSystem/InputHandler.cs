@@ -6,6 +6,7 @@ using UnityEngine.InputSystem;
 
 
 [RequireComponent(typeof(PlayerInput))]
+[RequireComponent(typeof(CombatAnimationController))]
 public class InputHandler : MonoBehaviour
 {
     private InputBuffer inputBuffer = new();
@@ -13,11 +14,12 @@ public class InputHandler : MonoBehaviour
     private readonly float inputDelay = 0.05f;
 
     private RingBuffer<InputType> previousActionsBuffer = new(1);
+    private CombatAnimationController combatAnimationController;
 
-    private bool isRunning = false;
+    //private bool isRunning = false;
     void Start()
     {
-
+        combatAnimationController = GetComponent<CombatAnimationController>();
     }
 
     void Update()
@@ -71,11 +73,11 @@ public class InputHandler : MonoBehaviour
         // Implement sprint input handling here
         if (context.started)
         {
-            isRunning = true;
+           
         }
         else if (context.canceled)
         {
-            isRunning = false;
+            
 
         }
     }
@@ -88,8 +90,13 @@ public class InputHandler : MonoBehaviour
         inputBufferQueue.Enqueue(new InputBuffer.InputCommand(commandName, Time.time));
     }
 
-    private void ExecuteCommand(InputBuffer.InputCommand command)
+    private void ExecuteCommand(InputBuffer.InputCommand command = null)
     {
+        if (command == null)
+        {
+            Idle();
+            return;
+        }
         var attack = InputType.Null;
         if (previousActionsBuffer.Count > 0)
         {
@@ -122,27 +129,28 @@ public class InputHandler : MonoBehaviour
         // Add more command executions as needed
     }
 
+    void Idle()
+    {
+       combatAnimationController.PlayAnimation(InputType.Idle);
+    }
     void Attack(bool isConsecutiveAttack)
     {
-        Debug.Log("Attack");
+        combatAnimationController.PlayAnimation(InputType.Attack);
     }
 
     void Jump()
     {
+        
     }
 
     void Move()
     {
-        if (isRunning)
-        {
-        }
-        else
-        {
-        }
+       
     }
 
     void Block()
     {
+        
     }
 
 

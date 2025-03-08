@@ -6,14 +6,14 @@ using System;
 /// </summary>
 public class InputBuffer
 {
-    
+
     private readonly float bufferTime = 0.2f; // Time in seconds to keep inputs in the buffer
-    
+
     /// <summary>
     /// Processes the input buffer, executing the oldest command if it is still within the buffer time.
     /// </summary>
     /// <param name="EexecuteCommand">The action to execute with the dequeued input command.</param>
-    public void ProcessInputBuffer( Queue<InputCommand> inputBuffer, Action<InputCommand> EexecuteCommand)
+    public void ProcessInputBuffer(Queue<InputCommand> inputBuffer, Action<InputCommand> EexecuteCommand)
     {
         while (inputBuffer.Count > 0 && Time.time - inputBuffer.Peek().timestamp > bufferTime)
         {
@@ -24,7 +24,12 @@ public class InputBuffer
         {
             InputCommand command = inputBuffer.Dequeue();
             EexecuteCommand(command);
-            
+
+        }
+        else if(inputBuffer.Count == 0)
+        {
+            InputCommand command = null;
+            EexecuteCommand(command);
         }
     }
 
@@ -37,7 +42,7 @@ public class InputBuffer
         public float timestamp;
         public InputType inputType;
         public dynamic inputValue;
-        
+
         /// <summary>
         /// Initializes a new instance of the <see cref="InputCommand"/> class.
         /// </summary>
