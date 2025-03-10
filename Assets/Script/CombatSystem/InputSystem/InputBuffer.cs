@@ -41,14 +41,14 @@ public class InputBuffer
         public string name;
         public float timestamp;
         public InputType inputType;
-        public dynamic inputValue;
+        public Vector2 inputValue;
 
         /// <summary>
         /// Initializes a new instance of the <see cref="InputCommand"/> class.
         /// </summary>
         /// <param name="name">The name of the input command.</param>
         /// <param name="timestamp">The time at which the command was issued.</param>
-        public InputCommand(InputType inputType, float timestamp, dynamic inputValue = null)
+        public InputCommand(InputType inputType, float timestamp, Vector2 inputValue = new Vector2())
         {
             this.inputType = inputType;
             this.timestamp = timestamp;

@@ -29,11 +29,88 @@ public class CombatAnimationController : MonoBehaviour
 
     }
 
+    // public void PlayAnimation(InputType inputType, float transitionDuration = 0.2f)
+    // {
+    //     if (inputType == InputType.Idle)
+    //     {
+    //         bool anyOtherAnimationPlaying = false;
+    //         for (int i = 0; i < mixerPlayable.GetInputCount(); i++)
+    //         {
+    //             if (i != (int)InputType.Idle && mixerPlayable.GetInputWeight(i) > 0)
+    //             {
+    //                 anyOtherAnimationPlaying = true;
+    //                 break;
+    //             }
+    //         }
+
+    //         if (anyOtherAnimationPlaying)
+    //         {
+    //             return;
+    //         }
+    //     }
+
+    //     StartCoroutine(BlendToAnimation(inputType, transitionDuration));
+    // }
+
+    private InputType currentAnimation = InputType.Idle;
     public void PlayAnimation(InputType inputType, float transitionDuration = 0.2f)
     {
+
+        if (inputType == InputType.Idle)
+        {
+            bool anyOtherAnimationPlaying = false;
+            for (int i = 0; i < mixerPlayable.GetInputCount(); i++)
+            {
+                if (i != (int)InputType.Idle && mixerPlayable.GetInputWeight(i) > 0) // Buffer added
+                {
+                    anyOtherAnimationPlaying = true;
+                    break;
+                }
+            }
+
+            if (anyOtherAnimationPlaying)
+            {
+                return;
+            }
+        }
+
+        if (currentAnimation == inputType) return; // Prevent redundant calls
+
+        currentAnimation = inputType; // Track active animation
         StartCoroutine(BlendToAnimation(inputType, transitionDuration));
     }
 
+    // private IEnumerator<WaitForSeconds> BlendToAnimation(InputType inputType, float transitionDuration)
+    // {
+    //     float time = 0f;
+    //     float[] initialWeights = new float[mixerPlayable.GetInputCount()];
+
+    //     for (int i = 0; i < initialWeights.Length; i++)
+    //     {
+    //         initialWeights[i] = mixerPlayable.GetInputWeight(i);
+    //     }
+
+    //     while (time < transitionDuration)
+    //     {
+    //         time += Time.deltaTime;
+    //         float blend = time / transitionDuration;
+
+    //         for (int i = 0; i < initialWeights.Length; i++)
+    //         {
+    //             float targetWeight = (i == (int)inputType) ? 1f : 0f;
+    //             mixerPlayable.SetInputWeight(i, Mathf.Lerp(initialWeights[i], targetWeight, blend));
+    //         }
+
+    //         yield return null;
+    //     }
+
+    //     for (int i = 0; i < initialWeights.Length; i++)
+    //     {
+    //         float targetWeight = (i == (int)inputType) ? 1f : 0f;
+
+    //         mixerPlayable.SetInputWeight(i, targetWeight);
+    //     }
+    // }
     private IEnumerator<WaitForSeconds> BlendToAnimation(InputType inputType, float transitionDuration)
     {
         float time = 0f;
@@ -44,6 +121,14 @@ public class CombatAnimationController : MonoBehaviour
             initialWeights[i] = mixerPlayable.GetInputWeight(i);
         }
 
+        // Ensure PlayableGraph keeps running
+        mixerPlayable.GetGraph().GetRootPlayable(0).SetDone(false);
+        mixerPlayable.GetGraph().GetRootPlayable(0).Play();
+
+        Playable playable = mixerPlayable.GetInput((int)inputType);
+        playable.SetTime(0); // Reset animation to start
+        playable.Play(); // Ensure it plays
+
         while (time < transitionDuration)
         {
             time += Time.deltaTime;
@@ -52,10 +137,6 @@ public class CombatAnimationController : MonoBehaviour
             for (int i = 0; i < initialWeights.Length; i++)
             {
                 float targetWeight = (i == (int)inputType) ? 1f : 0f;
-                if (inputType == InputType.Idle && initialWeights[i] > 0)
-                {
-                    targetWeight = initialWeights[i];
-                }
                 mixerPlayable.SetInputWeight(i, Mathf.Lerp(initialWeights[i], targetWeight, blend));
             }
 
@@ -65,15 +146,24 @@ public class CombatAnimationController : MonoBehaviour
         for (int i = 0; i < initialWeights.Length; i++)
         {
             float targetWeight = (i == (int)inputType) ? 1f : 0f;
-            if (inputType == InputType.Idle && initialWeights[i] > 0)
-            {
-                targetWeight = initialWeights[i];
-            }
             mixerPlayable.SetInputWeight(i, targetWeight);
         }
+
+        // Force evaluation
+        mixerPlayable.GetGraph().Evaluate();
+
+        // Wait until the animation completes
+        while (playable.IsValid() && playable.GetTime() < playable.GetDuration())
+        {
+            yield return null;
+        }
+
+        // Ensure it lands exactly at the last frame
+        playable.SetTime(playable.GetDuration());
+       // playable.Pause(); // Stop the animation at the last frame
     }
 
-   
+
 
     void AddAnimationsToMixer()
     {
@@ -102,8 +192,7 @@ public class CombatAnimationController : MonoBehaviour
         {
             InputType.Attack => animationClips.attack1,
             InputType.Jump => animationClips.jump,
-            InputType.MoveForward => animationClips.MoveForward,
-            InputType.MoveBackward => animationClips.MoveBackward,
+            InputType.Move => animationClips.MoveForward,
             InputType.MoveLeft => animationClips.MoveLeft,
             InputType.MoveRight => animationClips.MoveRight,
             InputType.Block => animationClips.block,

@@ -5,8 +5,9 @@ using UnityEngine.InputSystem;
 
 
 
+
 [RequireComponent(typeof(PlayerInput))]
-[RequireComponent(typeof(CombatAnimationController))]
+[RequireComponent(typeof(AnimationHandler))]
 public class InputHandler : MonoBehaviour
 {
     private InputBuffer inputBuffer = new();
@@ -16,26 +17,28 @@ public class InputHandler : MonoBehaviour
     private RingBuffer<InputType> previousActionsBuffer = new(1);
     private CombatAnimationController combatAnimationController;
 
+    private AnimationHandler animationHandler;
+
     //private bool isRunning = false;
+
+    Vector2 moveInput = new Vector2();
+
     void Start()
     {
-        combatAnimationController = GetComponent<CombatAnimationController>();
+        animationHandler = GetComponent<AnimationHandler>();
     }
 
     void Update()
     {
         inputBuffer.ProcessInputBuffer(inputBufferQueue, ExecuteCommand);
-
-        if (inputBufferQueue.Count > 0)
+        if (moveInput != Vector2.zero)
         {
-            var command = inputBufferQueue.Dequeue();
-            if (command != null)
-            {
-                Debug.Log(command.inputType.ToString());
-            }
+            Move();
         }
-
-
+        else
+        {
+            animationHandler.Idle();
+        }
     }
 
     // Update is called once per frame
@@ -59,7 +62,8 @@ public class InputHandler : MonoBehaviour
     {
         // Implement movement input handling here
         Vector2 moveInput = context.ReadValue<Vector2>();
-        StartCoroutine(RegisterInputWithDelay(InputType.MoveBackward, moveInput));
+        Debug.Log("MoveInput: " + moveInput);
+        StartCoroutine(RegisterInputWithDelay(InputType.Move, moveInput));
     }
 
     public void OnBlock(InputAction.CallbackContext context)
@@ -73,53 +77,38 @@ public class InputHandler : MonoBehaviour
         // Implement sprint input handling here
         if (context.started)
         {
-           
+
         }
         else if (context.canceled)
         {
-            
+
 
         }
     }
 
 
 
-    private IEnumerator RegisterInputWithDelay(InputType commandName, dynamic inputValue = null)
+    private IEnumerator RegisterInputWithDelay(InputType commandName, Vector2 inputValue = new Vector2())
     {
         yield return new WaitForSeconds(inputDelay);
-        inputBufferQueue.Enqueue(new InputBuffer.InputCommand(commandName, Time.time));
+        inputBufferQueue.Enqueue(new InputBuffer.InputCommand(commandName, Time.time, inputValue));
     }
 
     private void ExecuteCommand(InputBuffer.InputCommand command = null)
     {
-        if (command == null)
-        {
-            Idle();
-            return;
-        }
-        var attack = InputType.Null;
-        if (previousActionsBuffer.Count > 0)
-        {
-            attack = previousActionsBuffer.Dequeue();
-        }
+        if (command == null) { Idle(); return; }
+
         switch (command.inputType)
         {
             case InputType.Attack:
-                if (attack == InputType.Attack)
-                {
-                    Attack(true);
-                }
-                else
-                {
-                    Attack(false);
-                }
-
+                Attack();
                 break;
             case InputType.Jump:
                 Jump();
                 break;
-            case InputType.MoveForward:
-                Move();
+            case InputType.Move:
+                Vector2 moveInput = command.inputValue;
+                MoveHandler(moveInput);
                 break;
             case InputType.Block:
                 Block();
@@ -131,26 +120,36 @@ public class InputHandler : MonoBehaviour
 
     void Idle()
     {
-       combatAnimationController.PlayAnimation(InputType.Idle);
+        //  animationHandler.Idle();
+
     }
-    void Attack(bool isConsecutiveAttack)
+    void Attack()
     {
-        combatAnimationController.PlayAnimation(InputType.Attack);
+        animationHandler.AttackAnimation();
     }
 
     void Jump()
     {
-        
+        animationHandler.JumpAnimation();
+    }
+
+    void MoveHandler(Vector2 moveInput)
+    {
+
+
+        this.moveInput = moveInput;
+
     }
 
     void Move()
     {
-       
+       animationHandler.MoveAnimation(moveInput);
+         Debug.Log("MoveInput: " + moveInput);
     }
 
     void Block()
     {
-        
+
     }
 
 
