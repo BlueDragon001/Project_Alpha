@@ -18,11 +18,12 @@ public class AnimationHandler : MonoBehaviour
     public void JumpAnimation()
     {
         animator.SetTrigger("JumpAttack");
+        Debug.Log("Jump Attack");
     }
     public void MoveAnimation(Vector2 moveInput)
     {
-        if (moveInput.y > 0) animator.SetBool("RunForward", true);
-        if (moveInput.y < 0) animator.SetBool("RunBackward", true);
+        if (moveInput.y > 0 || moveInput.x > 0) animator.SetBool("RunForward", true);
+        if (moveInput.y < 0 || moveInput.x < 0) animator.SetBool("RunBackward", true);
     }
     public void Idle()
     {

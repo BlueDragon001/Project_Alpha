@@ -8,6 +8,7 @@ using UnityEngine.InputSystem;
 
 [RequireComponent(typeof(PlayerInput))]
 [RequireComponent(typeof(AnimationHandler))]
+[RequireComponent(typeof(PhysicsBasedPlayerController))]
 public class InputHandler : MonoBehaviour
 {
     private InputBuffer inputBuffer = new();
@@ -18,6 +19,7 @@ public class InputHandler : MonoBehaviour
     private CombatAnimationController combatAnimationController;
 
     private AnimationHandler animationHandler;
+    private PhysicsBasedPlayerController physicsBasedPlayerController;
 
     //private bool isRunning = false;
 
@@ -26,6 +28,7 @@ public class InputHandler : MonoBehaviour
     void Start()
     {
         animationHandler = GetComponent<AnimationHandler>();
+        physicsBasedPlayerController = GetComponent<PhysicsBasedPlayerController>();
     }
 
     void Update()
@@ -37,7 +40,7 @@ public class InputHandler : MonoBehaviour
         }
         else
         {
-            animationHandler.Idle();
+
         }
     }
 
@@ -62,7 +65,6 @@ public class InputHandler : MonoBehaviour
     {
         // Implement movement input handling here
         Vector2 moveInput = context.ReadValue<Vector2>();
-        Debug.Log("MoveInput: " + moveInput);
         StartCoroutine(RegisterInputWithDelay(InputType.Move, moveInput));
     }
 
@@ -120,7 +122,7 @@ public class InputHandler : MonoBehaviour
 
     void Idle()
     {
-        //  animationHandler.Idle();
+        animationHandler.Idle();
 
     }
     void Attack()
@@ -131,20 +133,16 @@ public class InputHandler : MonoBehaviour
     void Jump()
     {
         animationHandler.JumpAnimation();
+        physicsBasedPlayerController.HandleJumpInput();
     }
 
-    void MoveHandler(Vector2 moveInput)
-    {
+    void MoveHandler(Vector2 moveInput) { this.moveInput = moveInput; }
 
-
-        this.moveInput = moveInput;
-
-    }
 
     void Move()
     {
-       animationHandler.MoveAnimation(moveInput);
-         Debug.Log("MoveInput: " + moveInput);
+        animationHandler.MoveAnimation(moveInput);
+        physicsBasedPlayerController.HandleMovementInput(moveInput);
     }
 
     void Block()
