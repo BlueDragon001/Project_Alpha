@@ -12,6 +12,7 @@ public enum CombatState { Idle, Attacking, Jumping, Moving, Blocking, Dodging, H
 public static class CombatStateMachine
 {
     public static CombatState currentState { get; private set; }
+    
     public static void ChangeState(CombatState newState)
     {
         if (currentState == newState) return;
