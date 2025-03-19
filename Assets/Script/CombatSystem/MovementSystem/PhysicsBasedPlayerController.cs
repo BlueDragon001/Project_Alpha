@@ -25,7 +25,7 @@ public class PhysicsBasedPlayerController : MonoBehaviour
     private Camera mainCamera;
     private Vector3 moveDirection;
     private bool isGrounded;
-    private bool canJump = true;
+   // private bool canJump = true;
     private int jumpCount;
     private float lastJumpTime;
     private RaycastHit slopeHit;
@@ -67,7 +67,7 @@ public class PhysicsBasedPlayerController : MonoBehaviour
         if (isGrounded && !wasGrounded)
         {
             jumpCount = 0;
-            canJump = true;
+         //   canJump = true;
         }
     }
 
@@ -96,7 +96,7 @@ public class PhysicsBasedPlayerController : MonoBehaviour
             rb.AddForce(Vector3.up * jumpForce, ForceMode.Impulse);
             jumpCount++;
             lastJumpTime = Time.time;
-            canJump = false;
+           // canJump = false;
         }
     }
 

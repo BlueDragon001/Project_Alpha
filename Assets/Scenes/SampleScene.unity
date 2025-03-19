@@ -206,7 +206,7 @@ Transform:
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 330585543}
   serializedVersion: 2
-  m_LocalRotation: {x: 0.16625479, y: -0.01079918, z: 0.0018208673, w: 0.98602206}
+  m_LocalRotation: {x: 0.1661812, y: -0.031249376, z: 0.005269007, w: 0.98558587}
   m_LocalPosition: {x: -0.05892138, y: 1.0226107, z: 3.1021342}
   m_LocalScale: {x: 1, y: 1, z: 1}
   m_ConstrainProportionsScale: 0
@@ -697,7 +697,7 @@ Transform:
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 943694601}
   serializedVersion: 2
-  m_LocalRotation: {x: 0.16625476, y: -0.010799179, z: 0.0018208667, w: 0.98602206}
+  m_LocalRotation: {x: 0.16618119, y: -0.031249376, z: 0.005269006, w: 0.98558587}
   m_LocalPosition: {x: -0.05892138, y: 1.0226107, z: 3.1021342}
   m_LocalScale: {x: 1, y: 1, z: 1}
   m_ConstrainProportionsScale: 0
@@ -850,6 +850,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 56ee9a94aad6f4d46bdf3b87af2bd146, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
+  playerControls: {fileID: -944628639613478452, guid: 052faaac586de48259a63d0c4782560b, type: 3}
 --- !u!114 &1117253329
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -1097,7 +1098,7 @@ BoxCollider:
   m_PrefabInstance: {fileID: 0}
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 1117253327}
-  m_Material: {fileID: 0}
+  m_Material: {fileID: 13400000, guid: 1c7d245fc80a21e4eae924623b1bb414, type: 2}
   m_IncludeLayers:
     serializedVersion: 2
     m_Bits: 0
@@ -1168,7 +1169,7 @@ BoxCollider:
   m_PrefabInstance: {fileID: 0}
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 2006788456}
-  m_Material: {fileID: 0}
+  m_Material: {fileID: 13400000, guid: 9ca20b9e49232c648ab80164e261ffa4, type: 2}
   m_IncludeLayers:
     serializedVersion: 2
     m_Bits: 0
@@ -1261,12 +1262,8 @@ GameObject:
   - component: {fileID: 2095309647}
   - component: {fileID: 2095309646}
   - component: {fileID: 2095309645}
-  - component: {fileID: 2095309641}
-  - component: {fileID: 2095309642}
   - component: {fileID: 2095309648}
-  - component: {fileID: 2095309649}
-  - component: {fileID: 2095309650}
-  - component: {fileID: 2095309651}
+  - component: {fileID: 2095309642}
   - component: {fileID: 2095309652}
   m_Layer: 0
   m_Name: Cube (1)
@@ -1275,18 +1272,6 @@ GameObject:
   m_NavMeshLayer: 0
   m_StaticEditorFlags: 0
   m_IsActive: 0
---- !u!114 &2095309641
-MonoBehaviour:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 2095309640}
-  m_Enabled: 1
-  m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: 56ee9a94aad6f4d46bdf3b87af2bd146, type: 3}
-  m_Name: 
-  m_EditorClassIdentifier: 
 --- !u!114 &2095309642
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -1300,7 +1285,7 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   m_Actions: {fileID: -944628639613478452, guid: 052faaac586de48259a63d0c4782560b, type: 3}
-  m_NotificationBehavior: 2
+  m_NotificationBehavior: 1
   m_UIInputModule: {fileID: 0}
   m_DeviceLostEvent:
     m_PersistentCalls:
@@ -1314,7 +1299,7 @@ MonoBehaviour:
   m_ActionEvents:
   - m_PersistentCalls:
       m_Calls:
-      - m_Target: {fileID: 2095309641}
+      - m_Target: {fileID: 0}
         m_TargetAssemblyTypeName: InputHandler, Assembly-CSharp
         m_MethodName: OnMove
         m_Mode: 0
@@ -1334,7 +1319,7 @@ MonoBehaviour:
     m_ActionName: 'Player/Look[/Mouse/delta]'
   - m_PersistentCalls:
       m_Calls:
-      - m_Target: {fileID: 2095309641}
+      - m_Target: {fileID: 0}
         m_TargetAssemblyTypeName: InputHandler, Assembly-CSharp
         m_MethodName: OnAttack
         m_Mode: 0
@@ -1358,7 +1343,7 @@ MonoBehaviour:
     m_ActionName: 'Player/Crouch[/Keyboard/c]'
   - m_PersistentCalls:
       m_Calls:
-      - m_Target: {fileID: 2095309641}
+      - m_Target: {fileID: 0}
         m_TargetAssemblyTypeName: InputHandler, Assembly-CSharp
         m_MethodName: OnJump
         m_Mode: 0
@@ -1523,57 +1508,6 @@ Animator:
   m_AllowConstantClipSamplingOptimization: 1
   m_KeepAnimatorStateOnDisable: 0
   m_WriteDefaultValuesOnDisable: 0
---- !u!114 &2095309649
-MonoBehaviour:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 2095309640}
-  m_Enabled: 1
-  m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: bba16aab6387db74b840754c753c424c, type: 3}
-  m_Name: 
-  m_EditorClassIdentifier: 
-  animationClips: {fileID: 0}
---- !u!114 &2095309650
-MonoBehaviour:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 2095309640}
-  m_Enabled: 1
-  m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: b7cb7d3e15b3dfd47a21b83b7d42f5bd, type: 3}
-  m_Name: 
-  m_EditorClassIdentifier: 
---- !u!114 &2095309651
-MonoBehaviour:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 2095309640}
-  m_Enabled: 1
-  m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: bd402beb5014deb4b9ddc28ad7aabbeb, type: 3}
-  m_Name: 
-  m_EditorClassIdentifier: 
-  moveSpeed: 5
-  acceleration: 60
-  deceleration: 20
-  airControl: 0.3
-  maxVelocity: 8
-  jumpForce: 5
-  jumpCooldown: 0.2
-  maxAirJumps: 0
-  groundCheckRadius: 0.2
-  groundLayer:
-    serializedVersion: 2
-    m_Bits: 0
-  groundCheck: {fileID: 0}
-  slopeLimit: 45
 --- !u!54 &2095309652
 Rigidbody:
   m_ObjectHideFlags: 0

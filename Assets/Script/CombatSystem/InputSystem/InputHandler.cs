@@ -3,9 +3,6 @@ using System.Collections;
 using System.Collections.Generic;
 using UnityEngine.InputSystem;
 
-
-
-
 [RequireComponent(typeof(PlayerInput))]
 [RequireComponent(typeof(AnimationHandler))]
 [RequireComponent(typeof(PhysicsBasedPlayerController))]
@@ -16,15 +13,36 @@ public class InputHandler : MonoBehaviour
     private readonly float inputDelay = 0.05f;
 
     private RingBuffer<InputType> previousActionsBuffer = new(1);
-    private CombatAnimationController combatAnimationController;
 
     private AnimationHandler animationHandler;
     private PhysicsBasedPlayerController physicsBasedPlayerController;
 
-    //private bool isRunning = false;
-
     Vector2 moveInput = new Vector2();
 
+    [SerializeField] private InputActionAsset playerControls;
+    private InputAction moveAction, attackAction, jumpAction, blockAction, actionModifier;
+
+
+
+
+    void Awake()
+    {
+        InitActions();
+    }
+    private void InitActions()
+    {
+        playerControls.Enable();
+        moveAction = playerControls.FindAction("Move");
+        attackAction = playerControls.FindAction("Attack");
+        jumpAction = playerControls.FindAction("Jump");
+        blockAction = playerControls.FindAction("Block");
+        //  actionModifier = playerControls.FindAction("ActionModifier");
+        moveAction.Enable();
+        attackAction.Enable();
+        jumpAction.Enable();
+        blockAction.Enable();
+        //        actionModifier.Enable();
+    }
     void Start()
     {
         animationHandler = GetComponent<AnimationHandler>();
@@ -34,61 +52,87 @@ public class InputHandler : MonoBehaviour
     void Update()
     {
         inputBuffer.ProcessInputBuffer(inputBufferQueue, ExecuteCommand);
-        if (moveInput != Vector2.zero)
-        {
-            Move();
-        }
-        else
-        {
-
-        }
+        InputHandlerUpdate();
     }
 
-    // Update is called once per frame
-    public void OnAttack(InputAction.CallbackContext context)
+    void InputHandlerUpdate()
     {
-        if (context.started)
+        if (attackAction.triggered)
         {
             StartCoroutine(RegisterInputWithDelay(InputType.Attack));
-        }
-    }
 
-    public void OnJump(InputAction.CallbackContext context)
-    {
-        if (context.started)
+        }
+        else if (moveAction.IsPressed())
+        {
+            moveInput = moveAction.ReadValue<Vector2>();
+            if (moveInput == Vector2.zero) return;
+            StartCoroutine(RegisterInputWithDelay(InputType.Move, moveInput));
+
+        }
+
+        if (jumpAction.triggered)
         {
             StartCoroutine(RegisterInputWithDelay(InputType.Jump));
         }
-    }
-
-    public void OnMove(InputAction.CallbackContext context)
-    {
-        // Implement movement input handling here
-        Vector2 moveInput = context.ReadValue<Vector2>();
-        StartCoroutine(RegisterInputWithDelay(InputType.Move, moveInput));
-    }
-
-    public void OnBlock(InputAction.CallbackContext context)
-    {
-        // Implement block input handling here
-        if (context.started) StartCoroutine(RegisterInputWithDelay(InputType.Block));
-    }
-
-    public void ActionModifier(InputAction.CallbackContext context)
-    {
-        // Implement sprint input handling here
-        if (context.started)
+        if (blockAction.triggered)
         {
-
+            ///  StartCoroutine(RegisterInputWithDelay(InputType.Block));
         }
-        else if (context.canceled)
+        else if (!moveAction.IsPressed() && !attackAction.triggered && !jumpAction.triggered && !blockAction.triggered)
         {
-
-
+            Idle();
+            // Debug.Log("hello");
         }
+
     }
 
 
+    #region Obsolete Input Handling
+    /* public void OnAttack(InputAction.CallbackContext context)
+     {
+         if (context.started)
+         {
+             StartCoroutine(RegisterInputWithDelay(InputType.Attack));
+         }
+     }
+
+     public void OnJump(InputAction.CallbackContext context)
+     {
+         if (context.started)
+         {
+             StartCoroutine(RegisterInputWithDelay(InputType.Jump));
+         }
+     }
+
+     public void OnMove(InputAction.CallbackContext context)
+     {
+         // Implement movement input handling here
+         Vector2 moveInput = context.ReadValue<Vector2>();
+         Debug.Log("Hello World");
+
+     }
+
+     public void OnBlock(InputAction.CallbackContext context)
+     {
+         // Implement block input handling here
+         if (context.started) StartCoroutine(RegisterInputWithDelay(InputType.Block));
+     }
+
+     public void ActionModifier(InputAction.CallbackContext context)
+     {
+         // Implement sprint input handling here
+         if (context.started)
+         {
+
+         }
+         else if (context.canceled)
+         {
+
+
+         }
+     }
+ */
+    #endregion
 
     private IEnumerator RegisterInputWithDelay(InputType commandName, Vector2 inputValue = new Vector2())
     {
@@ -110,7 +154,7 @@ public class InputHandler : MonoBehaviour
                 break;
             case InputType.Move:
                 Vector2 moveInput = command.inputValue;
-                MoveHandler(moveInput);
+                Move(moveInput);
                 break;
             case InputType.Block:
                 Block();
@@ -127,7 +171,9 @@ public class InputHandler : MonoBehaviour
     }
     void Attack()
     {
-        animationHandler.AttackAnimation();
+        float pauseTime = animationHandler.AttackAnimation();
+        StartCoroutine(PauseExecution(pauseTime));
+
     }
 
     void Jump()
@@ -136,18 +182,22 @@ public class InputHandler : MonoBehaviour
         physicsBasedPlayerController.HandleJumpInput();
     }
 
-    void MoveHandler(Vector2 moveInput) { this.moveInput = moveInput; }
 
 
-    void Move()
+    void Move(Vector2 Input)
     {
-        animationHandler.MoveAnimation(moveInput);
-        physicsBasedPlayerController.HandleMovementInput(moveInput);
+        animationHandler.MoveAnimation(Input);
+        physicsBasedPlayerController.HandleMovementInput(Input);
     }
 
     void Block()
     {
 
+    }
+
+    IEnumerator PauseExecution(float pauseTime)
+    {
+        yield return new WaitForSeconds(pauseTime);
     }
 
 

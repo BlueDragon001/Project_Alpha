@@ -8,12 +8,15 @@ public class AnimationHandler : MonoBehaviour
         animator = GetComponent<Animator>();
     }
 
+
+
     // Update is called once per frame
-    public void AttackAnimation()
+    public float AttackAnimation()
     {
         AnimatorStateInfo stateInfo = animator.GetCurrentAnimatorStateInfo(0);
         if (stateInfo.IsName("Attack")) { animator.SetBool("ComboAttack", true); }
         else { animator.SetTrigger("Attack"); animator.SetBool("ComboAttack", false); }
+        return stateInfo.length;
     }
     public void JumpAnimation()
     {
