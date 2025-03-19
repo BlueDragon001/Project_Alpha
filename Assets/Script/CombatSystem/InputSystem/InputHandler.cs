@@ -3,9 +3,14 @@ using System.Collections;
 using System.Collections.Generic;
 using UnityEngine.InputSystem;
 
+/// <summary>
+/// Handles player input and manages the input buffer system for combat actions.
+/// Requires PlayerInput, AnimationHandler, PhysicsBasedPlayerController, and ActionHandler components.
+/// </summary>
 [RequireComponent(typeof(PlayerInput))]
 [RequireComponent(typeof(AnimationHandler))]
 [RequireComponent(typeof(PhysicsBasedPlayerController))]
+[RequireComponent(typeof(ActionHandler))]
 public class InputHandler : MonoBehaviour
 {
     private InputBuffer inputBuffer = new();
@@ -16,11 +21,12 @@ public class InputHandler : MonoBehaviour
 
     private AnimationHandler animationHandler;
     private PhysicsBasedPlayerController physicsBasedPlayerController;
-
+    private ActionHandler actionHandler;
     Vector2 moveInput = new Vector2();
 
     [SerializeField] private InputActionAsset playerControls;
     private InputAction moveAction, attackAction, jumpAction, blockAction, actionModifier;
+
 
 
 
@@ -47,6 +53,7 @@ public class InputHandler : MonoBehaviour
     {
         animationHandler = GetComponent<AnimationHandler>();
         physicsBasedPlayerController = GetComponent<PhysicsBasedPlayerController>();
+        actionHandler = GetComponent<ActionHandler>();
     }
 
     void Update()
@@ -59,14 +66,16 @@ public class InputHandler : MonoBehaviour
     {
         if (attackAction.triggered)
         {
+            inputBufferQueue.Clear();
             StartCoroutine(RegisterInputWithDelay(InputType.Attack));
 
         }
-        else if (moveAction.IsPressed())
+        else if (moveAction.IsPressed() && CombatStateMachine.currentState == CombatState.Idle)
         {
             moveInput = moveAction.ReadValue<Vector2>();
             if (moveInput == Vector2.zero) return;
             StartCoroutine(RegisterInputWithDelay(InputType.Move, moveInput));
+            Debug.Log(CombatStateMachine.currentState.ToString());
 
         }
 
@@ -80,7 +89,7 @@ public class InputHandler : MonoBehaviour
         }
         else if (!moveAction.IsPressed() && !attackAction.triggered && !jumpAction.triggered && !blockAction.triggered)
         {
-            Idle();
+            actionHandler.Idle();
             // Debug.Log("hello");
         }
 
@@ -142,63 +151,35 @@ public class InputHandler : MonoBehaviour
 
     private void ExecuteCommand(InputBuffer.InputCommand command = null)
     {
-        if (command == null) { Idle(); return; }
+        if (command == null) { actionHandler.Idle(); return; }
 
         switch (command.inputType)
         {
             case InputType.Attack:
-                Attack();
+                actionHandler.Attack();
                 break;
             case InputType.Jump:
-                Jump();
+                actionHandler.Jump();
                 break;
             case InputType.Move:
                 Vector2 moveInput = command.inputValue;
-                Move(moveInput);
+                actionHandler.Move(moveInput);
                 break;
             case InputType.Block:
-                Block();
+                actionHandler.Block();
                 break;
         }
         previousActionsBuffer.Enqueue(command.inputType);
         // Add more command executions as needed
     }
 
-    void Idle()
+    private void OnDisable()
     {
-        animationHandler.Idle();
-
+        moveAction.Disable();
+        attackAction.Disable();
+        jumpAction.Disable();
+        blockAction.Disable();
+        // actionModifier.Disable();
     }
-    void Attack()
-    {
-        float pauseTime = animationHandler.AttackAnimation();
-        StartCoroutine(PauseExecution(pauseTime));
-
-    }
-
-    void Jump()
-    {
-        animationHandler.JumpAnimation();
-        physicsBasedPlayerController.HandleJumpInput();
-    }
-
-
-
-    void Move(Vector2 Input)
-    {
-        animationHandler.MoveAnimation(Input);
-        physicsBasedPlayerController.HandleMovementInput(Input);
-    }
-
-    void Block()
-    {
-
-    }
-
-    IEnumerator PauseExecution(float pauseTime)
-    {
-        yield return new WaitForSeconds(pauseTime);
-    }
-
 
 }

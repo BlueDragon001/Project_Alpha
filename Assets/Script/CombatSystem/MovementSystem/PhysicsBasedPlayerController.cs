@@ -1,5 +1,9 @@
 using UnityEngine;
 
+/// <summary>
+/// Controls player movement using Unity's physics system.
+/// Handles ground movement, jumping, and slope detection.
+/// </summary>
 [RequireComponent(typeof(Rigidbody))]
 public class PhysicsBasedPlayerController : MonoBehaviour
 {
@@ -49,6 +53,9 @@ public class PhysicsBasedPlayerController : MonoBehaviour
         Move();
     }
 
+    /// <summary>
+    /// Checks if the player is on a slope within the allowed slope limit.
+    /// </summary>
     private bool IsOnSlope()
     {
         if (Physics.Raycast(transform.position, Vector3.down, out slopeHit, groundCheckRadius + 0.1f))
@@ -59,6 +66,9 @@ public class PhysicsBasedPlayerController : MonoBehaviour
         return false;
     }
 
+    /// <summary>
+    /// Updates the grounded state and resets jump count when landing.
+    /// </summary>
     private void GroundCheck()
     {
         bool wasGrounded = isGrounded;
@@ -71,6 +81,10 @@ public class PhysicsBasedPlayerController : MonoBehaviour
         }
     }
 
+    /// <summary>
+    /// Processes movement input relative to camera orientation.
+    /// Applies air control multiplier when not grounded.
+    /// </summary>
     public void HandleMovementInput(Vector2 input)
     {
       //  Debug.Log(input);
@@ -86,6 +100,9 @@ public class PhysicsBasedPlayerController : MonoBehaviour
         moveDirection = (cameraRight * input.x + cameraForward * input.y).normalized * controlMultiplier;
     }
 
+    /// <summary>
+    /// Handles jump input with cooldown and multiple jump support.
+    /// </summary>
     public void HandleJumpInput()
     {
         if (Time.time - lastJumpTime < jumpCooldown) return;
@@ -100,6 +117,10 @@ public class PhysicsBasedPlayerController : MonoBehaviour
         }
     }
 
+    /// <summary>
+    /// Applies movement forces and handles character rotation.
+    /// Includes slope compensation and velocity limiting.
+    /// </summary>
     private void Move()
     {
         Vector3 targetVelocity = moveDirection * moveSpeed;

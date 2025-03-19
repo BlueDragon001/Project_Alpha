@@ -3,6 +3,11 @@ using UnityEngine.Animations;
 using UnityEngine.Playables;
 using System.Collections.Generic;
 
+/// <summary>
+/// [OBSOLETE] Animation controller that uses Unity's Playables API to handle combat animations.
+/// This class is marked as obsolete and will be replaced with a new animation system.
+/// </summary>
+[System.Obsolete("This animation controller is deprecated. Use the new animation system instead.")]
 public class CombatAnimationController : MonoBehaviour
 {
     public AnimationClips animationClips;
