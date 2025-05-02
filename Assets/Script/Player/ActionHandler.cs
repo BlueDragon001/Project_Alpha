@@ -16,7 +16,7 @@ public class ActionHandler : MonoBehaviour
     public void Idle()
     {
         animationHandler.Idle();
-        // CombatStateMachine.ChangeState(CombatState.Idle);
+        CombatStateMachine.ChangeState(CombatState.Idle);
 
     }
     public void Attack()
@@ -42,6 +42,7 @@ public class ActionHandler : MonoBehaviour
     {
         animationHandler.MoveAnimation(Input);
         physicsBasedPlayerController.HandleMovementInput(Input);
+        CombatStateMachine.ChangeState(CombatState.Moving);
     }
 
     public void Block()

@@ -3,7 +3,7 @@ using UnityEngine;
 /// <summary>
 /// Represents the possible states in the combat system.
 /// </summary>
-public enum CombatState { Idle, Attacking, Jumping, Moving, Blocking, Dodging, Hiting, Dieing, None }
+public enum CombatState { Idle, Attacking, Jumping, Moving, Blocking, Dodging, Hiting, Dieing,Heal, None }
 
 /// <summary>
 /// Static class that manages the combat state transitions.
