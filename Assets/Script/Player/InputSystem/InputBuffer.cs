@@ -7,7 +7,7 @@ using System;
 public class InputBuffer
 {
 
-    private readonly float bufferTime = 0.1f; // Time in seconds to keep inputs in the buffer
+    private readonly float bufferTime = 0.01f; // Time in seconds to keep inputs in the buffer
 
     /// <summary>
     /// Processes the input buffer, executing commands within the buffer time window.
@@ -15,7 +15,7 @@ public class InputBuffer
     /// </summary>
     /// <param name="inputBuffer">Queue containing input commands</param>
     /// <param name="EexecuteCommand">Callback to execute when processing a command</param>
-    public void ProcessInputBuffer(Queue<InputCommand> inputBuffer, Action<InputCommand> EexecuteCommand)
+    public void ProcessInputBuffer(ref Queue<InputCommand> inputBuffer, Action<InputCommand> EexecuteCommand)
     {
         while (inputBuffer.Count > 0 && Time.time - inputBuffer.Peek().timestamp > bufferTime)
         {
@@ -25,10 +25,10 @@ public class InputBuffer
         if (inputBuffer.Count > 0)
         {
             InputCommand command = inputBuffer.Dequeue();
-            EexecuteCommand(command);
 
+            EexecuteCommand(command);
         }
-        else if(inputBuffer.Count == 0)
+        else if (inputBuffer.Count == 0)
         {
             InputCommand command = null;
             EexecuteCommand(command);

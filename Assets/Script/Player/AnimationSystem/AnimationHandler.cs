@@ -18,6 +18,8 @@ public class AnimationHandler : MonoBehaviour
     /// </summary>
     public float AttackAnimation()
     {
+        animator.SetBool("RunForward", false);
+        animator.SetBool("RunBackward", false);
         AnimatorStateInfo stateInfo = animator.GetCurrentAnimatorStateInfo(0);
         if (stateInfo.IsName("Attack")) { animator.SetBool("ComboAttack", true); }
         else { animator.SetTrigger("Attack"); animator.SetBool("ComboAttack", false); }
@@ -29,6 +31,8 @@ public class AnimationHandler : MonoBehaviour
     /// </summary>
     public float JumpAnimation()
     {
+        animator.SetBool("RunForward", false);
+        animator.SetBool("RunBackward", false);
         animator.SetTrigger("JumpAttack");
         AnimatorStateInfo stateInfo = animator.GetCurrentAnimatorStateInfo(0);
         return stateInfo.length;

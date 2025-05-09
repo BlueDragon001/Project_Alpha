@@ -2,6 +2,8 @@ using UnityEngine;
 using System.Collections;
 using System.Collections.Generic;
 using UnityEngine.InputSystem;
+using System.Data.Common;
+using System.Security.Permissions;
 
 /// <summary>
 /// Handles player input and manages the input buffer system for combat actions.
@@ -26,9 +28,7 @@ public class InputHandler : MonoBehaviour
 
     [SerializeField] private InputActionAsset playerControls;
     private InputAction moveAction, attackAction, jumpAction, blockAction, actionModifier;
-
-
-
+    bool delayMovement = false;
 
 
     void Awake()
@@ -42,12 +42,12 @@ public class InputHandler : MonoBehaviour
         attackAction = playerControls.FindAction("Attack");
         jumpAction = playerControls.FindAction("Jump");
         blockAction = playerControls.FindAction("Block");
-        //  actionModifier = playerControls.FindAction("ActionModifier");
+        //actionModifier = playerControls.FindAction("ActionModifier");
         moveAction.Enable();
         attackAction.Enable();
         jumpAction.Enable();
         blockAction.Enable();
-        //        actionModifier.Enable();
+        //actionModifier.Enable();
     }
     void Start()
     {
@@ -58,8 +58,8 @@ public class InputHandler : MonoBehaviour
 
     void Update()
     {
-        inputBuffer.ProcessInputBuffer(inputBufferQueue, ExecuteCommand);
         InputHandlerUpdate();
+        inputBuffer.ProcessInputBuffer(ref inputBufferQueue, ExecuteCommand);
     }
 
     void InputHandlerUpdate()
@@ -68,15 +68,11 @@ public class InputHandler : MonoBehaviour
         {
             inputBufferQueue.Clear();
             StartCoroutine(RegisterInputWithDelay(InputType.Attack));
-
         }
-        else if (moveAction.IsPressed() && CombatStateMachine.currentState == CombatState.Idle)
+        if (moveAction.IsPressed() && !delayMovement)
         {
             moveInput = moveAction.ReadValue<Vector2>();
-            if (moveInput == Vector2.zero) return;
             StartCoroutine(RegisterInputWithDelay(InputType.Move, moveInput));
-            Debug.Log(CombatStateMachine.currentState.ToString());
-
         }
 
         if (jumpAction.triggered)
@@ -90,7 +86,7 @@ public class InputHandler : MonoBehaviour
         else if (!moveAction.IsPressed() && !attackAction.triggered && !jumpAction.triggered && !blockAction.triggered)
         {
             actionHandler.Idle();
-            // Debug.Log("hello");
+
         }
 
     }
@@ -151,19 +147,25 @@ public class InputHandler : MonoBehaviour
 
     private void ExecuteCommand(InputBuffer.InputCommand command = null)
     {
-        if (command == null) { actionHandler.Idle(); return; }
+        if (command == null) { return; }
+
 
         switch (command.inputType)
         {
             case InputType.Attack:
-                actionHandler.Attack();
+                float attackTime = actionHandler.Attack();
+                StartCoroutine(DelayMovement(attackTime));
                 break;
             case InputType.Jump:
-                actionHandler.Jump();
+                float jumpTime = actionHandler.Jump();
+                StartCoroutine(DelayMovement(jumpTime));
                 break;
             case InputType.Move:
-                Vector2 moveInput = command.inputValue;
-                actionHandler.Move(moveInput);
+                if (!delayMovement)
+                {
+                    Vector2 moveInput = command.inputValue;
+                    actionHandler.Move(moveInput);
+                }
                 break;
             case InputType.Block:
                 actionHandler.Block();
@@ -181,5 +183,18 @@ public class InputHandler : MonoBehaviour
         blockAction.Disable();
         // actionModifier.Disable();
     }
+
+    IEnumerator DelayMovement(float time)
+    {
+        delayMovement = true;
+        yield return new WaitForSeconds(time - 0.4f);
+        delayMovement = false;
+    }
+
+
+
+
+
+
 
 }

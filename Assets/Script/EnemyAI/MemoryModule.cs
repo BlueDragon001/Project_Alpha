@@ -12,6 +12,7 @@ public class MemoryModule : MonoBehaviour
 
     public Memory memory = new();
     readonly EnemyAIStateMachine enemyAI = new();
+
     private void Awake()
     {
         player = GameObject.FindGameObjectWithTag("Player");
@@ -46,5 +47,10 @@ public class MemoryModule : MonoBehaviour
     private void ClearMemory()
     {
         memory.memoryStates.Clear();
+    }
+
+    public EnemyAIStateMachine.EnemyState GetCurrentAIState()
+    {
+        return enemyAI.currentState;
     }
 }

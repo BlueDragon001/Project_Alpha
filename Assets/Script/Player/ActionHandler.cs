@@ -16,24 +16,23 @@ public class ActionHandler : MonoBehaviour
     public void Idle()
     {
         animationHandler.Idle();
-        CombatStateMachine.ChangeState(CombatState.Idle);
+        // CombatStateMachine.ChangeState(CombatState.Idle);
 
     }
-    public void Attack()
+    public float Attack()
     {
         float holdTime = animationHandler.AttackAnimation();
         CombatStateMachine.ChangeState(CombatState.Attacking);
-        StartCoroutine(ChangeStateAfterTime(CombatState.Idle, holdTime - 1.7f));
-        Debug.Log(holdTime);
-
+        return holdTime;
     }
 
-    public void Jump()
+    public float Jump()
     {
         float holdTime = animationHandler.JumpAnimation();
         CombatStateMachine.ChangeState(CombatState.Jumping);
         physicsBasedPlayerController.HandleJumpInput();
-        StartCoroutine(ChangeStateAfterTime(CombatState.Idle, holdTime - 1.7f));
+        return holdTime;
+      
     }
 
 
