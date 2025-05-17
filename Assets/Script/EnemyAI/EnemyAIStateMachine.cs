@@ -2,7 +2,7 @@ using UnityEngine;
 
 public class EnemyAIStateMachine
 {
-    public enum EnemyState { Idle, Patrol, Chase, CombatMode, Attack, Flee, Die, None }
+    public enum EnemyState { Patrol, Idle, Chase, CombatMode, Attack, Flee, Die, None }
     public enum CounterState
     {
         AggressiveCombo,

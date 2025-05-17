@@ -1,6 +1,5 @@
 using System.Collections.Generic;
 using UnityEngine;
-using UnityEngine.Analytics;
 
 public class MemoryModule : MonoBehaviour
 {
@@ -11,7 +10,7 @@ public class MemoryModule : MonoBehaviour
     private GameObject player;
 
     public Memory memory = new();
-    readonly EnemyAIStateMachine enemyAI = new();
+    private EnemyAIStateMachine enemyAI = new();
 
     private void Awake()
     {

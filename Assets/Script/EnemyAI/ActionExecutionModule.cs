@@ -54,6 +54,8 @@ public class ActionExecutionModule : MonoBehaviour
     void ExecuteAction(EnemyAIStateMachine.EnemyState currentState)
     {
 
+        Debug.Log($"Current State: {currentState}");
+
 
         switch (currentState)
         {
@@ -75,15 +77,19 @@ public class ActionExecutionModule : MonoBehaviour
                 HandleCombat();
                 break;
 
-            case EnemyAIStateMachine.EnemyState.Flee:
-                Vector3 awayFromPlayer = transform.position + (transform.position - player.transform.position);
-                movementModule.MoveToTarget(CreateTempTarget(awayFromPlayer));
-                break;
+            
         }
     }
 
     private void HandleCombat()
     {
+        Debug.Log(memoryModule.memory.memoryStates);
+        if (memoryModule.memory.memoryStates == null || memoryModule.memory.memoryStates.Count == 0)
+        {
+            stateMachine.ChangeState(EnemyAIStateMachine.EnemyState.Idle);
+            return;
+        }
+
         var counterStrategy = behaviorModule.GetCounterStrategy(memoryModule.memory.memoryStates);
 
         switch (counterStrategy)
@@ -105,7 +111,7 @@ public class ActionExecutionModule : MonoBehaviour
 
     private Vector3 GetCirclingPosition()
     {
-        
+
         float angle = Time.time * 90f;
         Vector3 offset = Quaternion.Euler(0, angle, 0) * Vector3.right * 2f;
         return player.transform.position + offset;

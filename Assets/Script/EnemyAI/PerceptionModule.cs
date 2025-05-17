@@ -1,8 +1,9 @@
 
+using Unity.Multiplayer.Center.Common;
 using UnityEngine;
-public class PerceptionModule  : MonoBehaviour
+public class PerceptionModule : MonoBehaviour
 {
-    public float PerceptionRadius = 5f;
+    public float PerceptionRadius = 100f;
     public float DetectionDistance = 10f;
     private GameObject player;
 
@@ -16,7 +17,7 @@ public class PerceptionModule  : MonoBehaviour
         }
     }
 
-    
+
 
     public bool IsPlayerInRange()
     {
@@ -39,25 +40,36 @@ public class PerceptionModule  : MonoBehaviour
         return false;
     }
 
-    public bool IsPlayerInFOV()
+    private bool IsPlayerInFOV(Vector3 playerDirection)
     {
         Vector3 directionToPlayer = player.transform.position - transform.position;
         float angle = Vector3.Angle(transform.forward, directionToPlayer);
         float playerDistance = Vector3.Distance(transform.position, player.transform.position);
 
-        return angle <= 45f && playerDistance <= PerceptionRadius;
+        return angle <= 45f && playerDistance <= PerceptionRadius * 100;
     }
+
 
     public bool ScanForPlayer()
     {
-        Vector3 directionToPlayer = (player.transform.position - transform.position).normalized;
-        float yAngle = Vector3.SignedAngle(transform.position, player.transform.position, Vector3.up);
-        float t = Mathf.PingPong(Time.time * 2, 1f);
-        float lerpYAngle = Mathf.LerpAngle(yAngle + 45f, yAngle - 45f, t);
+        Vector3 directionToPlayer = (player.transform.position - transform.position);
 
-        Quaternion targetRotation = Quaternion.Euler(0, lerpYAngle, 0);
-        Vector3 newDirection = targetRotation * directionToPlayer;
-        if (Physics.Raycast(transform.position, newDirection, out RaycastHit hit, PerceptionRadius))
+        // Correctly calculate the angle between the forward direction and the direction to the player
+        //float yAngle = Vector3.SignedAngle(transform.forward, directionToPlayer, Vector3.up);
+
+        // float t = Mathf.PingPong(Time.time * 2, 1f);
+        // float lerpYAngle = Mathf.LerpAngle(yAngle + 45f, yAngle - 45f, t);
+
+        // Quaternion targetRotation = Quaternion.Euler(0, lerpYAngle, 0);
+
+        // Vector3 newDirection = targetRotation * Vector3.forward;
+
+        // Debug.DrawRay(transform.position, Vector3.up * 10, Color.red);
+        // Debug.DrawRay(transform.position, newDirection * PerceptionRadius * 100, Color.green, 1f);
+
+        if (IsPlayerInFOV(directionToPlayer) == false) return false;
+
+        if (Physics.Raycast(transform.position, directionToPlayer.normalized, out RaycastHit hit, PerceptionRadius * 100))
         {
             if (hit.collider.gameObject.CompareTag("Player"))
             {
@@ -68,5 +80,7 @@ public class PerceptionModule  : MonoBehaviour
 
         return false;
     }
+
+
 
 }

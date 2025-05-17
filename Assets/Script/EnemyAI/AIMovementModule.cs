@@ -7,12 +7,21 @@ using UnityEngine.AI;
 
 public class AIMovementModule : MonoBehaviour
 {
+    [Header("Movement Settings")]
+    [SerializeField] private float moveSpeed = 5f;
+    [SerializeField] private float acceleration = 60f;
+    [SerializeField] private float deceleration = 20f;
+    [SerializeField] private float airControl = 0.3f;
+    [SerializeField] private float maxVelocity = 8f;
+
+    [Header("NavMesh Settings")]
     private NavMeshAgent agent; // Reference to the NavMeshAgent component
     private Transform player;
     private Rigidbody rigidBody;
 
+
     [SerializeField]
-    private float directMoveSpeed = 5f; // Speed for direct movement using rigidbody
+    private float minDistance = 1.2f; // Minimum distance to maintain from the target
 
     void Start()
     {
@@ -21,22 +30,33 @@ public class AIMovementModule : MonoBehaviour
         rigidBody = GetComponent<Rigidbody>(); // Get the Rigidbody component attached to this GameObject
     }
 
+    void Update()
+    {
+        MoveToTarget(player); // Call the MoveToTarget method with the player as the target
+    }
+
 
     public void MoveToTarget(Transform target)
     {
-       float distance = Vector3.Distance(transform.position, target.position); // Calculate the distance to the target
+        float distance = Vector3.Distance(transform.position, target.position); // Calculate the distance to the target
 
-        if (distance > 2f) // If the target is more than 1 unit away
+        if (distance > 2f) // If the target is more than 2 units away
         {
+            agent.isStopped = false; // Allow the NavMeshAgent to move
             MoveToTargetNavMesh(target); // Move using NavMeshAgent
         }
-        else// If the target is within 1 unit
+        else // If the target is within or equal to 2 units
         {
-            if(distance > 1f){
-                MoveToTargetDirect(target); // Move directly using Rigidbody
-            } if(distance <= 1f){
-                target.position = -target.position; // Move the target to the opposite side of the enemy
-                MoveToTargetDirect(target); // Move directly using Rigidbody
+            agent.isStopped = true; // Stop the NavMeshAgent
+            // Only move directly if not too close
+            if (distance > minDistance)
+            {
+                MoveToTargetRigidbody(target); // Move using Rigidbody
+            }
+            else
+            {
+                // Stop movement to avoid overlap
+                rigidBody.linearVelocity = Vector3.zero;
             }
         }
 
@@ -50,19 +70,24 @@ public class AIMovementModule : MonoBehaviour
         }
     }
 
-    private void MoveToTargetDirect(Transform target)
+    private void MoveToTargetRigidbody(Transform target)
     {
-        if (rigidBody != null && target != null)
-        {
-            Vector3 direction = (target.position - transform.position).normalized;
-            rigidBody.MovePosition(transform.position + direction * directMoveSpeed * Time.fixedDeltaTime);
+        
+        if (rigidBody == null || target == null) return;
 
-            // Optional: Make the enemy face the target
-            if (direction != Vector3.zero)
-            {
-                Quaternion lookRotation = Quaternion.LookRotation(direction);
-                transform.rotation = Quaternion.Slerp(transform.rotation, lookRotation, Time.fixedDeltaTime * 5f);
-            }
+        Vector3 targetVelocity = (target.position - transform.position).normalized * moveSpeed;
+        targetVelocity.y = rigidBody.linearVelocity.y; // Preserve the vertical velocity
+        float currentAccel = moveSpeed > 0 ? acceleration : deceleration;
+        Vector3 velocityDiff = targetVelocity - rigidBody.linearVelocity;
+        velocityDiff.y = 0f; // Ignore vertical velocity for movement
+        Vector3 horizontalVelocity = Vector3.ProjectOnPlane(rigidBody.linearVelocity, Vector3.up);
+        if (horizontalVelocity.magnitude > maxVelocity)
+        {
+            Vector3 limitedVelocity = horizontalVelocity.normalized * maxVelocity;
+            rigidBody.linearVelocity = new Vector3(limitedVelocity.x, rigidBody.linearVelocity.y, limitedVelocity.z);
+            return;
         }
+        rigidBody.AddForce(velocityDiff * currentAccel, ForceMode.Acceleration);
+
     }
 }
