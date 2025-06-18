@@ -27,29 +27,29 @@ public class ActionExecutionModule : MonoBehaviour
         player = GameObject.FindGameObjectWithTag("Player");
     }
 
-    void Update()
-    {
-        if (Time.time - lastStateChangeTime < stateUpdateInterval) return;
+    // void Update()
+    // {
+    //     if (Time.time - lastStateChangeTime < stateUpdateInterval) return;
 
-        if (perceptionModule.IsPlayerInLineOfSight())
-        {
-            if (perceptionModule.IsPlayerInRange())
-            {
-                stateMachine.ChangeState(EnemyAIStateMachine.EnemyState.CombatMode);
-            }
-            else
-            {
-                stateMachine.ChangeState(EnemyAIStateMachine.EnemyState.Chase);
-            }
-        }
-        else if (memoryModule.GetCurrentAIState() == EnemyAIStateMachine.EnemyState.CombatMode)
-        {
-            stateMachine.ChangeState(EnemyAIStateMachine.EnemyState.Patrol);
-        }
+    //     if (perceptionModule.IsPlayerInLineOfSight())
+    //     {
+    //         if (perceptionModule.IsPlayerInRange())
+    //         {
+    //             stateMachine.ChangeState(EnemyAIStateMachine.EnemyState.CombatMode);
+    //         }
+    //         else
+    //         {
+    //             stateMachine.ChangeState(EnemyAIStateMachine.EnemyState.Chase);
+    //         }
+    //     }
+    //     else if (memoryModule.GetCurrentAIState() == EnemyAIStateMachine.EnemyState.CombatMode)
+    //     {
+    //         stateMachine.ChangeState(EnemyAIStateMachine.EnemyState.Patrol);
+    //     }
 
-        ExecuteAction(stateMachine.currentState);
-        lastStateChangeTime = Time.time;
-    }
+    //     ExecuteAction(stateMachine.currentState);
+    //     lastStateChangeTime = Time.time;
+    // }
 
     void ExecuteAction(EnemyAIStateMachine.EnemyState currentState)
     {
