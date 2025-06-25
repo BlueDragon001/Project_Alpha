@@ -10,8 +10,7 @@ public class MemoryModule : MonoBehaviour
     private GameObject player;
 
     public Memory memory = new();
-    private EnemyAIStateMachine enemyAI = new();
-
+   
     private void Awake()
     {
         player = GameObject.FindGameObjectWithTag("Player");
@@ -23,14 +22,7 @@ public class MemoryModule : MonoBehaviour
 
     void Update()
     {
-        if (enemyAI.currentState == EnemyAIStateMachine.EnemyState.CombatMode)
-        {
-            AddMemory(CombatStateMachine.currentState);
-        }
-        if (enemyAI.currentState == EnemyAIStateMachine.EnemyState.Die)
-        {
-            ClearMemory();
-        }
+
     }
 
 
@@ -48,10 +40,6 @@ public class MemoryModule : MonoBehaviour
         memory.memoryStates.Clear();
     }
 
-    public EnemyAIStateMachine.EnemyState GetCurrentAIState()
-    {
-        return enemyAI.currentState;
-    }
 
     public CombatState PredictNextPlayerAction(int lookback = 5)
     {

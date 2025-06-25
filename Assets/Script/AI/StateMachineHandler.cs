@@ -20,16 +20,19 @@ public static class StateMachineHandler
         Dead
     }
 
-    public static  StateMachine<EnemyState> enemyState = new StateMachine<EnemyState>();
+    public static StateMachine<EnemyState> enemyState = new();
 
-    
+
 
     public enum CombatState
     {
         Idle,
         Attacking,
-        Cooldown
+        Cooldown,
+        Blocking,
+        Dodging,
+        Stunned,
     }
 
-    public static StateMachine<CombatState> combatState = new StateMachine<CombatState>();
+    public static StateMachine<CombatState> combatState = new();
 }
