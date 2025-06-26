@@ -57,7 +57,7 @@ public class MetaballFieldContributor : MonoBehaviour
 
     }
 
-    void Onable()
+    void OnEnable()
     {
         MetaballManager.Instance?.RegisterField(this);
     }
@@ -95,9 +95,9 @@ public class MetaballFieldContributor : MonoBehaviour
         if (showGizmo)
         {
             Gizmos.color = isNegative ? Color.red : gizmoColor;
-            Gizmos.DrawWireSphere(cachedTransform.position, FieldRadius);
-             Gizmos.color = new Color(gizmoColor.r, gizmoColor.g, gizmoColor.b, 0.3f);
-            Gizmos.DrawSphere(cachedTransform.position, FieldRadius * 0.1f);
+            Gizmos.DrawWireSphere(transform.position, FieldRadius);
+            Gizmos.color = new Color(gizmoColor.r, gizmoColor.g, gizmoColor.b, 0.3f);
+            Gizmos.DrawSphere(transform.position, FieldRadius * 0.1f);
         }
     }
 }
