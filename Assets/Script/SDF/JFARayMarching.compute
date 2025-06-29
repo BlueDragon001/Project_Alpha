@@ -1,0 +1,228 @@
+#pragma kernel InitializeSeeds
+#pragma kernel JumpFloodPass
+#pragma kernel RayMarchingScene
+
+RWTexture2D<float4> SeedTexture;
+RWTexture2D<float4> DistanceField;
+RWTexture2D<float4> OutputTexture;
+
+Texture2D<float4> ObjectSilhouette;
+Texture2D<float4> PreviousJFA;
+
+// Camera and Screen parameters
+float4x4 CameraToWorld;
+float4x4 CameraInvProjection;
+float3 CameraPosition;
+float2 ScreenSize;
+
+// Jump Flooding parameters
+int JumpDistance;
+int textureSize;
+
+// Ray Marching parameters
+float MaxDistance;
+int MaxSteps;
+float Epsilon;
+float BlendRadius;
+
+// Multiple object support
+RWTexture2D<float4> Object1DistanceField;
+RWTexture2D<float4> Object2DistanceField;
+Texture2D<float4> Object1Silhouette;
+Texture2D<float4> Object2Silhouette;
+
+SamplerState _LinearClamp;
+
+// KERNEL 1: InitializeSeeds
+[numthreads(8, 8, 1)]
+void InitializeSeeds(uint3 id : SV_DispatchThreadID)
+{
+    uint2 coord = id.xy;
+    uint utextureSize = (uint)textureSize;
+    if (coord.x >= utextureSize || coord.y >= utextureSize) return;
+
+    float4 silhouette = ObjectSilhouette[coord];
+    if (silhouette.r > 0.5)
+    {
+        SeedTexture[coord] = float4(coord.xy, 0, 1); // Initialize seed with position and type
+    }
+    else
+    {
+        SeedTexture[coord] = float4(-1, -1, 0, 0);
+    }
+}
+
+// KERNEL 2: JumpFloodPass
+[numthreads(8, 8, 1)]
+void JumpFloodPass(uint3 id : SV_DispatchThreadID)
+{
+    uint2 coord = id.xy;
+    uint utextureSize = (uint)textureSize;
+    if(coord.x >= utextureSize || coord.y >= utextureSize) return;
+    float2 closestSeed = float2(- 1, - 1);
+    float minDistance = 999999.0;
+    for (int x = - 1; x <= 1; x ++)
+    {
+        for (int y = - 1; y <= 1; y ++)
+        {
+
+            int2 neighborCoord = coord + int2(x, y) * JumpDistance;
+            if(neighborCoord.x >= 0 && neighborCoord.y >= 0 && neighborCoord.x<textureSize && neighborCoord.y<textureSize)
+            {
+                float4 neighborData = PreviousJFA[neighborCoord];
+                if(neighborData.w > 0.5)
+                {
+                    float2 seedPos = neighborCoord.xy;
+                    float dist = length(float2(coord) - seedPos);
+
+                    if(dist < minDistance)
+                    {
+                        minDistance = dist;
+                        closestSeed = seedPos;
+                    }
+                }
+            }
+        }
+    }
+
+    if(closestSeed.x >= 0) SeedTexture[coord] = float4(closestSeed, minDistance, 1);
+    else SeedTexture[coord] = float4(- 1, - 1, 999999.0, 0);
+
+}
+
+// SDF Blend Functions
+
+float smoothUnion(float d1, float d2, float k)
+{
+    float h = clamp(0.5 + 0.5 * (d2 - d1) / k, 0.0, 1.0);
+    return lerp(d2, d1, h) - k * h * (1.0 - h);
+}
+
+float smoothSubtraction(float d1, float d2, float k)
+{
+    float h = clamp(0.5 - 0.5 * (d2 + d1) / k, 0.0, 1.0);
+    return lerp(d2, - d1, h) + k * h * (1.0 - h);
+}
+
+float smoothIntersection(float d1, float d2, float k)
+{
+    float h = clamp(0.5 - 0.5 * (d2 - d1) / k, 0.0, 1.0);
+    return lerp(d2, d1, h) + k * h * (1.0 - h);
+}
+
+
+// Distance Field Sampling
+
+float sampleDistanceField(float3 worldPos, RWTexture2D<float4> distanceField)
+{
+    float2 uv = worldPos.xz * 0.1 + 0.5; // Convert world position to UV
+    uv = clamp(uv, 0.0, 1.0); // Clamp UV to [0, 1]
+
+    uint2 texCoord = uint2(uv * (uint) textureSize);
+    float4 sample = distanceField[texCoord];
+    return sample.z - 0.1;
+}
+
+// Scene SDF
+
+float sceneSDF(float3 worldPos)
+{
+    float d1 = sampleDistanceField(worldPos, Object1DistanceField);
+    float d2 = sampleDistanceField(worldPos, Object2DistanceField);
+
+    // Combine distance fields using smooth union
+    return smoothUnion(d1, d2, BlendRadius);
+}
+
+float3 calculateNormal(float3 pos)
+{
+    float eps = 0.001;
+    float3 normal = float3(
+    sceneSDF(pos + float3(eps, 0, 0)) - sceneSDF(pos - float3(eps, 0, 0)),
+    sceneSDF(pos + float3(0, eps, 0)) - sceneSDF(pos - float3(0, eps, 0)),
+    sceneSDF(pos + float3(0, 0, eps)) - sceneSDF(pos - float3(0, 0, eps))
+    );
+    return normalize(normal);
+}
+
+float3 getRayDirection(float2 uv)
+{
+    float2 ndc = uv * 2.0 - 1.0; // Convert UV to NDC
+    float4 clipSpacePos = float4(ndc, - 1.0, 1.0);
+    float4 viewVector = mul(CameraInvProjection, clipSpacePos);
+    viewVector /= viewVector.w; // Normalize to get direction in view space
+    float3 worldDir = mul((float3x3)CameraToWorld, viewVector.xyz); // Convert to world space
+    return normalize(worldDir);
+}
+
+//Raymarching
+
+float3 raymarch(float3 rayOrigin, float3 rayDirection)
+{
+    float t = 0.0;
+    for (int i = 0; i < MaxSteps; i ++)
+    {
+        float3 currentPos = rayOrigin + rayDirection * t;
+        float distance = sceneSDF(currentPos);
+        if(distance < Epsilon)
+        {
+            return currentPos; // Return the position if we hit the surface or exceed max distance
+        }
+
+        t += distance; // Move along the ray by the distance
+        if(t > MaxDistance) break;
+
+    }
+
+    return float3(- 999, - 999, - 999); // Return an invalid position if no hit
+}
+
+//Simple Lighting
+
+float3 calculateLighting(float3 pos, float3 normal)
+{
+    float3 lightDir = normalize(float3(1, 1, 1));
+    float3 lightColor = float3(1, 1, 1);
+    float3 ambient = float3(0.1, 0.1, 0.2);
+
+    // Diffuse lighting
+    float ndotl = max(0.0, dot(normal, lightDir));
+    float3 diffuse = lightColor * ndotl;
+
+    // Simple fresnel effect
+    float3 viewDir = normalize(CameraPosition - pos);
+    float fresnel = pow(1.0 - max(0.0, dot(normal, viewDir)), 2.0);
+
+    return ambient + diffuse + fresnel * 0.3;
+}
+
+// KERNEL 3: RayMarchingScene
+[numthreads(8, 8, 1)]
+void RayMarchingScene(uint3 id : SV_DispatchThreadID)
+{
+    uint2 coord = id.xy;
+    uint utextureSize = (uint) textureSize;
+    if(coord.x >= utextureSize || coord.y >= utextureSize) return;
+
+    // Generate ray
+    float2 uv = float2(coord) / ScreenSize;
+    float3 rayOrigin = CameraPosition;
+    float3 rayDirection = getRayDirection(uv);
+
+    // Raymarch
+    float3 hitPos = raymarch(rayOrigin, rayDirection);
+
+    float3 color = float3(0.05, 0.05, 0.1); // Background color
+
+    if (hitPos.x > - 900) // Hit something
+    {
+        float3 normal = calculateNormal(hitPos);
+        color = calculateLighting(hitPos, normal);
+
+        // Add some color variation based on distance
+        float dist = length(hitPos - rayOrigin);
+        color *= lerp(float3(1, 0.5, 0.2), float3(0.2, 0.5, 1), saturate(dist * 0.1));
+    }
+
+    OutputTexture[coord] = float4(color, 1.0);
+}

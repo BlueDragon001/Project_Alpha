@@ -30,7 +30,7 @@ public class MetaballManager : MonoBehaviour
     [SerializeField] private string fieldRadiiProperty = "_FieldRadii";
     [SerializeField] private string fieldStrengthsProperty = "_FieldStrengths";
     [SerializeField] private string fieldCountProperty = "_FieldCount";
-    [SerializeField] private string fieldTypesProperty = "_FeildTypes";
+    [SerializeField] private string fieldTypesProperty = "_FieldTypes";
     [SerializeField] private string fieldNegativeProperty = "_FieldNegatives";
 
     private List<MetaballFieldContributor> allFields = new List<MetaballFieldContributor>();

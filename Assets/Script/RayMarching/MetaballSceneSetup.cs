@@ -23,8 +23,9 @@ public class MetaballSceneSetup : MonoBehaviour
             GameObject managerObject = new GameObject("MetaballManager");
             managerObject.AddComponent<MetaballManager>();
         }
-        CreateRenderQuad();
+       
         CreateTestMetaballs();
+       CreateRenderQuad();
 
         Debug.Log("Metaball scene setup complete!");
 
@@ -33,24 +34,25 @@ public class MetaballSceneSetup : MonoBehaviour
 
     private void CreateRenderQuad()
     {
-        Camera cam = Camera.main;
-        if (cam == null) cam = FindAnyObjectByType<Camera>();
-        GameObject quad = new GameObject("MetaballRenderQuad");
-        quad.transform.SetParent(cam.transform, false);
-        quad.transform.localPosition = new Vector3(0, 0, cam.nearClipPlane + 1f); // 1 unit in front of camera
-        quad.transform.localRotation = Quaternion.identity;
-        MetaballRenderer renderer = quad.AddComponent<MetaballRenderer>();
+        GameObject quadGO = new GameObject("MetaballRenderQuad");
+        quadGO.transform.position = Vector3.zero;
+        
+        MetaballRenderer renderer = quadGO.AddComponent<MetaballRenderer>();
+        
+        // Try to find the ray marching material
         if (rayMarchingMaterial == null)
         {
-            rayMarchingMaterial = Resources.Load<Material>("RaymarchMaterial");
+            // Look for material in Resources folder
+            rayMarchingMaterial = Resources.Load<Material>("MetaballRayMarching");
             if (rayMarchingMaterial == null)
             {
                 Debug.LogWarning("No ray marching material assigned! Please assign the metaball material to the renderer.");
             }
         }
+        
         if (rayMarchingMaterial != null)
         {
-            quad.GetComponent<MeshRenderer>().material = rayMarchingMaterial;
+            quadGO.GetComponent<MeshRenderer>().material = rayMarchingMaterial;
         }
 
     }
@@ -76,7 +78,7 @@ public class MetaballSceneSetup : MonoBehaviour
 
             // Make the visual sphere semi-transparent so we can see the ray marched result
             Renderer sphereRenderer = ballGO.GetComponent<Renderer>();
-            Material transparentMat = new Material(Shader.Find("Legacy Shaders/Transparent/Diffuse"));
+            Material transparentMat = new Material(Shader.Find("Universal Render Pipeline/Unlit"));
             transparentMat.color = new Color(1, 1, 1, 0.3f);
             sphereRenderer.material = transparentMat;
 

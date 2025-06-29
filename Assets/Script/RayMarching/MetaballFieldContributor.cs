@@ -25,7 +25,7 @@ public struct FieldData
         radius = r;
         strength = s;
         position = pos;
-        isNegative = isNeg ? -1.0f : 0.0f;
+        isNegative = isNeg ? 1.0f : 0.0f;
     }
 
 }
